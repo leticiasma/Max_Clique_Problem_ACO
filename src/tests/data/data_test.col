@@ -1,0 +1,7 @@
+c isso é um teste
+c essas linhas devem ser ignoradas
+c assumindo que o grafo é não direcionado
+p edge 3 3
+e 1 2
+e 1 3
+e 2 3

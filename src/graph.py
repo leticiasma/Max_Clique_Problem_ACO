@@ -1,5 +1,6 @@
 from __future__ import annotations
 import pathlib
+import random
 
 class UndirectedGraph:
     def __init__(self, num_nodes:int, num_edges:int) -> None:
@@ -9,7 +10,7 @@ class UndirectedGraph:
         
         #Indices começando com 1
         for i in range(1, num_nodes+1):
-            self._edge_dict[i] = set()
+            self._edge_dict[i] = list()
     
     @property
     def num_nodes(self) -> int:
@@ -20,12 +21,15 @@ class UndirectedGraph:
         return self._num_edges
     
     @property
-    def edges(self) -> None:
+    def edges_dict(self) -> None:
         raise AttributeError("Não é possível acessar o container de arestas diretamente!")
     
-    @edges.setter
-    def edges(self, new_edges) -> None:
+    @edges_dict.setter
+    def edges_dict(self, new_edges) -> None:
         raise AttributeError("Não é possível substituir o container de arestas!")
+
+    def random_node_id(self) -> int:
+        return random.randint(1, self._num_nodes)
     
     def add_edge(self, origin_node:int, dest_node:int) -> None:
         """
@@ -34,15 +38,28 @@ class UndirectedGraph:
         if origin_node not in self._edge_dict or dest_node not in self._edge_dict:
             return
         
-        self._edge_dict[origin_node].add(dest_node)
-        self._edge_dict[dest_node].add(origin_node)
+        self._add_if_not_present(origin_node, dest_node)
+        self._add_if_not_present(dest_node, origin_node)
     
-    def neighboors(self, node_id:int) -> set:
+    def _add_if_not_present(self, origin_node:int, dest_node:int):
+        edge_list:list = self._edge_dict[origin_node]
+        if dest_node not in edge_list:
+            edge_list.append(dest_node)
+    
+    def n_neighboors(self, node_id:int) -> int:
+        neighboors = self.ordered_neighboors(node_id)
+        if neighboors is not None:
+            return len(neighboors)
+        else:
+            return None
+    
+    def ordered_neighboors(self, node_id) -> tuple:
         """
-        Retorna o conjunto de nós vizinhos de node_id. Se node_id não estiver cadastrado,
+        Retorna tupla ordenada de nós vizinhos de node_id. 
+        Se node_id não estiver cadastrado,
         """
         if node_id in self._edge_dict:
-            return self._edge_dict[node_id]
+            return tuple(sorted(self._edge_dict[node_id]))
         else:
             return None
 
@@ -65,7 +82,6 @@ class UndirectedGraph:
                     num_nodes = int(line_parts[2])
                     num_edges = int(line_parts[3])
                     graph_obj = UndirectedGraph(num_nodes, num_edges)
-                    print("Num nodes: ", num_nodes, " Num edges: ", num_edges)
                 
                 elif line.startswith("e"):
                     line_parts = line.split(" ")
