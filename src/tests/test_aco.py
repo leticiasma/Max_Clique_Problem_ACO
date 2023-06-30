@@ -25,10 +25,10 @@ class TestACOMaxClique(TestCase):
         pheromones = self.aco._init_pheromones()
         expected_pheromones = [
             np.zeros(2),
-            np.zeros(5),
+            np.zeros(6),
             np.zeros(3),
             np.zeros(3),
-            np.zeros(3),
+            np.zeros(4),
             np.zeros(3),
             np.zeros(3),
             np.zeros(1),
@@ -101,6 +101,49 @@ class TestACOMaxClique(TestCase):
         self.aco._evaporate_pheromones(pheromones_list)
 
         for exp_array, true_array in zip(expected_pheromones, pheromones_list):
+            self.assertTrue((exp_array == true_array).all())
+    
+    def test_can_deposit_pheromones(self):
+        curr_max_clique = [2,3,5,9]
+        cycle_max_clique = [4, 6, 7]
+
+        base_pheromone = 0.5
+        base_pheromone_list = [base_pheromone]
+        pheromones = [
+            np.array(base_pheromone_list * 2),
+            np.array(base_pheromone_list * 6),
+            np.array(base_pheromone_list * 3),
+            np.array(base_pheromone_list * 3),
+            np.array(base_pheromone_list * 4),
+            np.array(base_pheromone_list * 3),
+            np.array(base_pheromone_list * 3),
+            np.array(base_pheromone_list * 1),
+            np.array(base_pheromone_list * 4),
+            np.array(base_pheromone_list * 3),
+        ]
+
+        pheromone_to_add = 1 / (
+            1 + len(curr_max_clique) - len(cycle_max_clique)
+        ) # 0.5
+
+        new_max_pheromone = base_pheromone + pheromone_to_add
+
+        expected_pheromones = [
+            np.array(base_pheromone_list * 2),
+            np.array(base_pheromone_list * 6),
+            np.array(base_pheromone_list * 3),
+            np.array([base_pheromone, new_max_pheromone, new_max_pheromone]).clip(max=self.t_max),
+            np.array(base_pheromone_list * 4),
+            np.array([new_max_pheromone, new_max_pheromone, base_pheromone]).clip(max=self.t_max),
+            np.array([new_max_pheromone, base_pheromone, new_max_pheromone]).clip(max=self.t_max),
+            np.array(base_pheromone_list * 1),
+            np.array(base_pheromone_list * 4),
+            np.array(base_pheromone_list * 3),
+        ]
+
+        self.aco._deposit_pheromones(pheromones, cycle_max_clique, curr_max_clique)
+        
+        for exp_array, true_array in zip(expected_pheromones, pheromones):
             self.assertTrue((exp_array == true_array).all())
 
 

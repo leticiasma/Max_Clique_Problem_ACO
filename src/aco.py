@@ -52,12 +52,13 @@ class ACOMaxClique:
                     cycle_max_clique = curr_ant_clique
 
             self._evaporate_pheromones(pheromones_list)
-            self._deposit_pheromones(
-                pheromones_list, cycle_max_clique, final_max_clique
-            )
 
             if len(cycle_max_clique) > len(final_max_clique):
                 final_max_clique = cycle_max_clique
+
+            self._deposit_pheromones(
+                pheromones_list, cycle_max_clique, final_max_clique
+            )
 
         return final_max_clique
 
@@ -94,7 +95,9 @@ class ACOMaxClique:
         return curr_ant_clique
 
     def _update_candidates(self, candidates: list, ordered_neighboors: tuple):
-        new_candidates = list(set(candidates).intersection(set(ordered_neighboors)))
+        new_candidates = list(
+            set(candidates).intersection(set(ordered_neighboors))
+        )
         return new_candidates
 
     def _init_pheromones(self) -> list[np.ndarray]:
@@ -195,7 +198,7 @@ class ACOMaxClique:
         """
         persistence_rate = 1 - self._evap_rate
         for idx, edges_pheromones in enumerate(pheromones_list):
-            new_pher:np.ndarray = edges_pheromones * persistence_rate
+            new_pher: np.ndarray = edges_pheromones * persistence_rate
             edges_pheromones = new_pher.clip(min=self._t_range.t_min)
             pheromones_list[idx] = edges_pheromones
 
@@ -216,17 +219,49 @@ class ACOMaxClique:
         )
 
         nodes_already_treated = set()
-        for node in cycle_max_clique:
-            node_neighs = self._graph.ordered_neighboors(node)
+        for curr_node in cycle_max_clique:
+            node_neighs = self._graph.ordered_neighboors(curr_node)
+
             for neigh_idx, neigh in enumerate(node_neighs):
                 if (
                     neigh in cycle_max_clique
                     and neigh not in nodes_already_treated
                 ):
-                    curr_pher = pheromones_list[node - 1][neigh_idx]
-                    new_pheromone = curr_pher + pheromone_to_add
-                    pheromones_list[node - 1][neigh_idx] = min(
-                        [new_pheromone, self._t_range.t_max]
+                    #att edge pheromone on curr_node list
+                    p_list_node_idx = curr_node - 1
+                    self._att_edge_pheromone(
+                        pheromones_list,
+                        pheromone_to_add,
+                        neigh_idx,
+                        p_list_node_idx,
                     )
 
-            nodes_already_treated.add(node)
+                    #att edge pheromone on neigh list
+                    neigh_neighboors = self._graph.ordered_neighboors(neigh)
+                    curr_node_neigh_idx = neigh_neighboors.index(curr_node)
+
+                    self._att_edge_pheromone(
+                        pheromones_list,
+                        pheromone_to_add,
+                        curr_node_neigh_idx,
+                        neigh-1,
+                    )
+
+            nodes_already_treated.add(curr_node)
+
+    def _att_edge_pheromone(
+        self,
+        pheromones_list: list[np.ndarray],
+        pheromone_to_add: float,
+        neigh_idx: int,
+        curr_node_idx: int,
+    ):
+        """
+        Adds pheromone_to_add at the edge from curr_node_idx to neigh_idx in
+        pheromones_list. Modifies pheromones_list inplace
+        """
+        curr_pher = pheromones_list[curr_node_idx][neigh_idx]
+        new_pheromone = curr_pher + pheromone_to_add
+        pheromones_list[curr_node_idx][neigh_idx] = min(
+            [new_pheromone, self._t_range.t_max]
+        )
