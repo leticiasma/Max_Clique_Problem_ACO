@@ -173,8 +173,11 @@ class TestACOMaxClique(TestCase):
         pheromones_list = self.aco._init_pheromones()
         initial_node = 4
         clique_found = self.aco._find_ant_clique(pheromones_list, initial_node)
-        print(clique_found)
         self.assertTrue(len(clique_found) > 0)
+    
+    def test_can_find_maximum_clique_simple_problem(self):
+        maximum_clique_found = self.aco.find_maximum_clique()
+        self.assertTrue(len(maximum_clique_found) == 4)
 
 if __name__ == "__main__":
     main()

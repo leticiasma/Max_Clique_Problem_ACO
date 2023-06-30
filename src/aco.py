@@ -88,7 +88,7 @@ class ACOMaxClique:
 
             candidates = self._update_candidates(candidates, ordered_neighboors)
 
-            candidate_pheromones = pheromones_list[curr_candidate-1]
+            candidate_pheromones = pheromones_list[curr_candidate - 1]
             self._filter_and_att_cands_t_factor(
                 candidates,
                 cands_t_factor,
@@ -126,16 +126,19 @@ class ACOMaxClique:
         return pheromones_list
 
     def _initialize_tau_factor(
-        self, candidates: list, pheromones_list: list, random_node: int
+        self,
+        candidates: list,
+        pheromones_list: list[np.ndarray],
+        curr_node_id: int,
     ) -> dict:
         """
         Inicializa o fator de feromônio (tau) para cada candidato.
         """
         candidates_tau_factor = dict()
-        ordered_neighboors = self._graph.ordered_neighboors(random_node)
+        ordered_neighboors = self._graph.ordered_neighboors(curr_node_id)
         for candidate in candidates:
             candidate_idx = ordered_neighboors.index(candidate)
-            tau_factor = pheromones_list[random_node][candidate_idx]
+            tau_factor = pheromones_list[curr_node_id-1][candidate_idx]
             candidates_tau_factor[candidate] = tau_factor
 
         return candidates_tau_factor
