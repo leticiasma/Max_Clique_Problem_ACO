@@ -7,7 +7,8 @@ EVAP_R = 0.05
 ALPHA = 1
 
 test:
-	python3 -m unittest discover tests
+	coverage run -m unittest discover tests
+	coverage html
 
 run:
 	python3 main.py --data_path $(DATA_PATH) --t_min $(T_MIN) --t_max $(T_MAX) --n_ants $(N_ANTS) \
