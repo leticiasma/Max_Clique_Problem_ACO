@@ -168,7 +168,13 @@ class TestACOMaxClique(TestCase):
         
         for idx, i in enumerate([4,5]):
             self.assertEqual(cands_t_factor[i], i+candidate_pheromones[idx])
-
+    
+    def test_ant_can_find_a_clique(self):
+        pheromones_list = self.aco._init_pheromones()
+        initial_node = 4
+        clique_found = self.aco._find_ant_clique(pheromones_list, initial_node)
+        print(clique_found)
+        self.assertTrue(len(clique_found) > 0)
 
 if __name__ == "__main__":
     main()

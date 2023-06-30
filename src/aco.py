@@ -62,19 +62,23 @@ class ACOMaxClique:
 
         return final_max_clique
 
-    def _find_ant_clique(self, pheromones_list: list[np.ndarray]) -> list:
+    def _find_ant_clique(
+        self, pheromones_list: list[np.ndarray], initial_node: int = None
+    ) -> list:
         """
         Faz uma formiga caminhar pelo grafo e encontrar um clique.
         """
         curr_ant_clique = list()
 
-        random_node = self._graph.random_node_id()
-        curr_ant_clique.append(random_node)
+        if initial_node is None:
+            initial_node = self._graph.random_node_id()
 
-        candidates = list(self._graph.ordered_neighboors(random_node))
+        curr_ant_clique.append(initial_node)
+
+        candidates = list(self._graph.ordered_neighboors(initial_node))
 
         cands_t_factor = self._initialize_tau_factor(
-            candidates, pheromones_list, random_node
+            candidates, pheromones_list, initial_node
         )
         while len(candidates) > 0:
             curr_candidate = self._choose_candidate(candidates, cands_t_factor)
@@ -84,12 +88,12 @@ class ACOMaxClique:
 
             candidates = self._update_candidates(candidates, ordered_neighboors)
 
-            candidate_pheromones = pheromones_list[curr_candidate]
+            candidate_pheromones = pheromones_list[curr_candidate-1]
             self._filter_and_att_cands_t_factor(
                 candidates,
                 cands_t_factor,
                 ordered_neighboors,
-                candidate_pheromones
+                candidate_pheromones,
             )
 
         return curr_ant_clique
@@ -172,7 +176,7 @@ class ACOMaxClique:
         candidates: list,
         cands_t_factor: dict,
         ordered_neighboors: tuple,
-        candidate_pheromones:np.ndarray
+        candidate_pheromones: np.ndarray,
     ):
         """
         Mantém em cands_t_factor apenas as chaves dos nós que estão em candidates.
