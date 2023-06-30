@@ -13,12 +13,12 @@ class TestACOMaxClique(TestCase):
         self.graph = UndirectedGraph.from_col_file(test_data_path)
         n_ants = 10
         n_its = 10
-        evap_r = 0.05
+        self.evap_r = 0.05
         self.t_max = 0.9
         t_range = TauRange(0.1, self.t_max)
         self.alpha = 1
         self.aco = ACOMaxClique(
-            self.graph, n_ants, n_its, evap_r, t_range, self.alpha
+            self.graph, n_ants, n_its, self.evap_r, t_range, self.alpha
         )
 
     def test_init_pheromones(self):
@@ -78,13 +78,30 @@ class TestACOMaxClique(TestCase):
         )
         _ = self.aco._choose_candidate(candidates, cands_t_factor)
         self.assertTrue(initial_len - 1 == len(candidates))
-    
+
     def test_can_update_candidates(self):
-        candidates = [1,2,3,4,5]
-        ordered_neighboors = (2,3,4)
-        expected_candidates = [2,3,4]
-        new_candidates = self.aco._update_candidates(candidates, ordered_neighboors)
+        candidates = [1, 2, 3, 4, 5]
+        ordered_neighboors = (2, 3, 4)
+        expected_candidates = [2, 3, 4]
+        new_candidates = self.aco._update_candidates(
+            candidates, ordered_neighboors
+        )
         self.assertListEqual(expected_candidates, new_candidates)
+
+    def test_can_evaporate_pheromones(self):
+        persistence_rate = 1 - self.evap_r
+        pheromones_list:list[np.ndarray] = list()
+        pheromones_list.append(np.array([0.9, 0.9, 0.8]))
+        pheromones_list.append(np.array([0.9, 0.8, 0.5]))
+
+        expected_pheromones = [
+            m_array * persistence_rate for m_array in pheromones_list
+        ]
+
+        self.aco._evaporate_pheromones(pheromones_list)
+
+        for exp_array, true_array in zip(expected_pheromones, pheromones_list):
+            self.assertTrue((exp_array == true_array).all())
 
 
 if __name__ == "__main__":

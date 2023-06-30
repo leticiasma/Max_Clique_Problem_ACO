@@ -194,13 +194,14 @@ class ACOMaxClique:
         definido em self._t_range.
         """
         persistence_rate = 1 - self._evap_rate
-        for edges_pheromones in pheromones_list:
-            new_pher = edges_pheromones * persistence_rate
-            edges_pheromones = max([self._t_range.t_min, new_pher])
+        for idx, edges_pheromones in enumerate(pheromones_list):
+            new_pher:np.ndarray = edges_pheromones * persistence_rate
+            edges_pheromones = new_pher.clip(min=self._t_range.t_min)
+            pheromones_list[idx] = edges_pheromones
 
     def _deposit_pheromones(
         self,
-        pheromones_list: list,
+        pheromones_list: list[np.ndarray],
         cycle_max_clique: list,
         final_max_clique: list,
     ):
