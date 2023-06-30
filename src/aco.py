@@ -84,12 +84,12 @@ class ACOMaxClique:
 
             candidates = self._update_candidates(candidates, ordered_neighboors)
 
+            candidate_pheromones = pheromones_list[curr_candidate]
             self._filter_and_att_cands_t_factor(
-                pheromones_list,
                 candidates,
                 cands_t_factor,
-                curr_candidate,
                 ordered_neighboors,
+                candidate_pheromones
             )
 
         return curr_ant_clique
@@ -169,11 +169,10 @@ class ACOMaxClique:
 
     def _filter_and_att_cands_t_factor(
         self,
-        pheromones_list: list,
         candidates: list,
         cands_t_factor: dict,
-        curr_candidate: int,
         ordered_neighboors: tuple,
+        candidate_pheromones:np.ndarray
     ):
         """
         Mantém em cands_t_factor apenas as chaves dos nós que estão em candidates.
@@ -181,15 +180,13 @@ class ACOMaxClique:
         incrementa o seu t_factor baseado no feromônio associado à aresta que liga
         curr_candidate a j.
         """
-        for node in cands_t_factor.keys():
+        target_keys = list(cands_t_factor.keys())
+        for node in target_keys:
             if node not in candidates:
                 del cands_t_factor[node]
-            else:
-                if node in ordered_neighboors:
-                    node_idx = ordered_neighboors.index(node)
-                    cands_t_factor[node] += pheromones_list[curr_candidate][
-                        node_idx
-                    ]
+            elif node in ordered_neighboors:
+                node_idx = ordered_neighboors.index(node)
+                cands_t_factor[node] += candidate_pheromones[node_idx]
 
     def _evaporate_pheromones(self, pheromones_list: list[np.ndarray]):
         """
@@ -227,7 +224,7 @@ class ACOMaxClique:
                     neigh in cycle_max_clique
                     and neigh not in nodes_already_treated
                 ):
-                    #att edge pheromone on curr_node list
+                    # att edge pheromone on curr_node list
                     p_list_node_idx = curr_node - 1
                     self._att_edge_pheromone(
                         pheromones_list,
@@ -236,7 +233,7 @@ class ACOMaxClique:
                         p_list_node_idx,
                     )
 
-                    #att edge pheromone on neigh list
+                    # att edge pheromone on neigh list
                     neigh_neighboors = self._graph.ordered_neighboors(neigh)
                     curr_node_neigh_idx = neigh_neighboors.index(curr_node)
 
@@ -244,7 +241,7 @@ class ACOMaxClique:
                         pheromones_list,
                         pheromone_to_add,
                         curr_node_neigh_idx,
-                        neigh-1,
+                        neigh - 1,
                     )
 
             nodes_already_treated.add(curr_node)

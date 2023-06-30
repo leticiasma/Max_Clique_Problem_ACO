@@ -90,7 +90,7 @@ class TestACOMaxClique(TestCase):
 
     def test_can_evaporate_pheromones(self):
         persistence_rate = 1 - self.evap_r
-        pheromones_list:list[np.ndarray] = list()
+        pheromones_list: list[np.ndarray] = list()
         pheromones_list.append(np.array([0.9, 0.9, 0.8]))
         pheromones_list.append(np.array([0.9, 0.8, 0.5]))
 
@@ -102,9 +102,9 @@ class TestACOMaxClique(TestCase):
 
         for exp_array, true_array in zip(expected_pheromones, pheromones_list):
             self.assertTrue((exp_array == true_array).all())
-    
+
     def test_can_deposit_pheromones(self):
-        curr_max_clique = [2,3,5,9]
+        curr_max_clique = [2, 3, 5, 9]
         cycle_max_clique = [4, 6, 7]
 
         base_pheromone = 0.5
@@ -124,7 +124,7 @@ class TestACOMaxClique(TestCase):
 
         pheromone_to_add = 1 / (
             1 + len(curr_max_clique) - len(cycle_max_clique)
-        ) # 0.5
+        )  # 0.5
 
         new_max_pheromone = base_pheromone + pheromone_to_add
 
@@ -132,19 +132,42 @@ class TestACOMaxClique(TestCase):
             np.array(base_pheromone_list * 2),
             np.array(base_pheromone_list * 6),
             np.array(base_pheromone_list * 3),
-            np.array([base_pheromone, new_max_pheromone, new_max_pheromone]).clip(max=self.t_max),
+            np.array(
+                [base_pheromone, new_max_pheromone, new_max_pheromone]
+            ).clip(max=self.t_max),
             np.array(base_pheromone_list * 4),
-            np.array([new_max_pheromone, new_max_pheromone, base_pheromone]).clip(max=self.t_max),
-            np.array([new_max_pheromone, base_pheromone, new_max_pheromone]).clip(max=self.t_max),
+            np.array(
+                [new_max_pheromone, new_max_pheromone, base_pheromone]
+            ).clip(max=self.t_max),
+            np.array(
+                [new_max_pheromone, base_pheromone, new_max_pheromone]
+            ).clip(max=self.t_max),
             np.array(base_pheromone_list * 1),
             np.array(base_pheromone_list * 4),
             np.array(base_pheromone_list * 3),
         ]
 
-        self.aco._deposit_pheromones(pheromones, cycle_max_clique, curr_max_clique)
-        
+        self.aco._deposit_pheromones(
+            pheromones, cycle_max_clique, curr_max_clique
+        )
+
         for exp_array, true_array in zip(expected_pheromones, pheromones):
             self.assertTrue((exp_array == true_array).all())
+
+    def test_can_filter_cands_t_factor(self):
+        candidates = [1, 2, 3, 4, 5]
+        ordered_neighboors = [4, 5]
+        cands_t_factor = {i: i for i in range(1, 12)}
+        candidate_pheromones = np.array([0.9, 0.9])
+        self.aco._filter_and_att_cands_t_factor(
+            candidates, cands_t_factor, ordered_neighboors, candidate_pheromones
+        )
+
+        for i in range(6, 12):
+            self.assertNotIn(i, cands_t_factor)
+        
+        for idx, i in enumerate([4,5]):
+            self.assertEqual(cands_t_factor[i], i+candidate_pheromones[idx])
 
 
 if __name__ == "__main__":
