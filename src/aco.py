@@ -1,6 +1,7 @@
 from graph import UndirectedGraph
 import numpy as np
 import random
+from results import Results
 
 
 class TauRange:
@@ -33,20 +34,25 @@ class ACOMaxClique:
         self._evap_rate = evap_r
         self._t_range = t_range
         self._alpha = alpha
+        self._results_tracker = None
 
     def find_maximum_clique(self) -> list:
         """
         Tenta encontrar o maior clique possível ao simular caminhamentos de formigas de acordo
         com os feromônios que elas vão deixando no caminho.
         """
+        self._results_tracker = Results(self._graph.num_nodes)
         pheromones_list = self._init_pheromones()
 
         final_max_clique = list()
-        for _ in range(self._n_its):
+        for it in range(self._n_its):
             cycle_max_clique = list()
 
             for _ in range(self._n_ants):
                 curr_ant_clique = self._find_ant_clique(pheromones_list)
+                self._results_tracker.add_clique_found_at_it(
+                    curr_ant_clique, it
+                )
 
                 if len(curr_ant_clique) > len(cycle_max_clique):
                     cycle_max_clique = curr_ant_clique
@@ -58,6 +64,10 @@ class ACOMaxClique:
 
             self._deposit_pheromones(
                 pheromones_list, cycle_max_clique, final_max_clique
+            )
+
+            self._results_tracker.calc_mean_pheromones_at_it(
+                pheromones_list, it
             )
 
         return final_max_clique
@@ -138,7 +148,7 @@ class ACOMaxClique:
         ordered_neighboors = self._graph.ordered_neighboors(curr_node_id)
         for candidate in candidates:
             candidate_idx = ordered_neighboors.index(candidate)
-            tau_factor = pheromones_list[curr_node_id-1][candidate_idx]
+            tau_factor = pheromones_list[curr_node_id - 1][candidate_idx]
             candidates_tau_factor[candidate] = tau_factor
 
         return candidates_tau_factor
@@ -201,10 +211,16 @@ class ACOMaxClique:
         definido em self._t_range.
         """
         persistence_rate = 1 - self._evap_rate
+        mean_pheromones = 0
+        count = 0
         for idx, edges_pheromones in enumerate(pheromones_list):
             new_pher: np.ndarray = edges_pheromones * persistence_rate
             edges_pheromones = new_pher.clip(min=self._t_range.t_min)
             pheromones_list[idx] = edges_pheromones
+            mean_pheromones += edges_pheromones.sum()
+            count += edges_pheromones.shape[0]
+
+        mean_pheromones /= count
 
     def _deposit_pheromones(
         self,
@@ -269,3 +285,6 @@ class ACOMaxClique:
         pheromones_list[curr_node_idx][neigh_idx] = min(
             [new_pheromone, self._t_range.t_max]
         )
+
+    def results_to_csv(self, path: str, delimiter=","):
+        self._results_tracker.to_csv(path, delimiter)

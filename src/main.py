@@ -61,15 +61,15 @@ def validate_args(args) -> bool:
     if not data_path.is_file():
         raise ValueError(f"{data_path} não existe!")
     
-    if not data_path.suffix == ".col":
-        raise ValueError(f"{data_path} não é um arquivo .col!")
+    # if not data_path.suffix == ".col":
+    #     raise ValueError(f"{data_path} não é um arquivo .col!")
     
     if args.t_min > args.t_max:
         raise ValueError(f"t_min ({args.t_min}) não pode ser maior do que t_max ({args.t_max})!")
     
-    check_between_0_and_1("t_min", args.t_min)
+    # check_between_0_and_1("t_min", args.t_min)
 
-    check_between_0_and_1("t_max", args.t_max)
+    # check_between_0_and_1("t_max", args.t_max)
     
     check_between_0_and_1("evap_r", args.evap_r)
     
@@ -84,8 +84,12 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     validate_args(args)
-
+    print(args)
     data_path = pathlib.Path(args.data_path)
     graph = UndirectedGraph.from_col_file(data_path)
     t_range = TauRange(args.t_min, args.t_max)
     aco = ACOMaxClique(graph, args.n_ants, args.n_its, args.evap_r, t_range, args.alpha)
+    maximum_clique = aco.find_maximum_clique()
+    print("Maximum Clique:", maximum_clique)
+    print("Total nodes: ", len(maximum_clique))
+    aco.results_to_csv("../results/run1.csv")
