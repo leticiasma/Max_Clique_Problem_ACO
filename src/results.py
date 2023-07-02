@@ -98,3 +98,34 @@ class Results:
         ) / self._num_cliques_found
 
         return re_samp_ratio
+    
+class ResultsAgg:
+    def __init__(self):
+        self.per_it_max_clique = dict()
+        self.per_cycle_max_clique = dict()
+        self.per_it_mean_p = dict()
+        self.per_it_similarity = dict()
+        self.per_run_re_samp_ratio = dict()
+    
+    def agg_files(self, paths:list[pathlib.Path], delimiter=","):
+        self.per_it_max_clique = dict()
+        self.per_cycle_max_clique = dict()
+        self.per_it_mean_p = dict()
+        self.per_it_similarity = dict()
+        self.per_run_re_samp_ratio = dict()
+
+
+        for path_id, path in enumerate(paths):
+            path = pathlib.Path(path)
+            with open(path, 'r') as file:
+                for l_idx, line in enumerate(file): 
+                    if l_idx == 0:
+                        continue
+
+                    data:list = line.split(delimiter)
+                    curr_it = int(data[0])
+                    self.per_it_max_clique.setdefault(curr_it, list()).append(int(data[1]))
+                    self.per_cycle_max_clique.setdefault(curr_it, list()).append(int(data[2]))
+                    self.per_it_mean_p.setdefault(curr_it, list()).append(float(data[3]))
+                    self.per_it_similarity.setdefault(curr_it, list()).append(float(data[4]))
+                    self.per_run_re_samp_ratio[path_id] = float(data[5]) 

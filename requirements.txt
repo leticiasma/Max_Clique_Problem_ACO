@@ -1,2 +1,4 @@
 numpy
 coverage
+jupyterlab
+ipykernel
