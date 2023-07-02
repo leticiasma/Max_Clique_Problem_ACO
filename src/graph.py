@@ -93,13 +93,14 @@ class UndirectedGraph:
 
                 elif line.startswith("p"):
                     line_parts = line.split(" ")
-                    line_parts = [part for part in line_parts if len(part.strip()) > 0]
+                    line_parts = cls._remove_empty(line_parts)
                     num_nodes = int(line_parts[2])
                     num_edges = int(line_parts[3])
                     graph_obj = UndirectedGraph(num_nodes, num_edges)
 
                 elif line.startswith("e"):
                     line_parts = line.split(" ")
+                    line_parts = cls._remove_empty(line_parts)
                     origin_node = int(line_parts[1])
                     dest_node = int(line_parts[2])
                     graph_obj.add_edge(origin_node, dest_node)
@@ -109,3 +110,7 @@ class UndirectedGraph:
                     continue
 
         return graph_obj
+
+    @classmethod
+    def _remove_empty(cls, line_parts):
+        return [part for part in line_parts if len(part.strip()) > 0]
