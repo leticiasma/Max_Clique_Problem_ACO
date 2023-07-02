@@ -2,3 +2,5 @@ numpy
 coverage
 jupyterlab
 ipykernel
+seaborn
+matplotlib
