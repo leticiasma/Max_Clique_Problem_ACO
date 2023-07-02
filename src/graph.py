@@ -93,6 +93,7 @@ class UndirectedGraph:
 
                 elif line.startswith("p"):
                     line_parts = line.split(" ")
+                    line_parts = [part for part in line_parts if len(part.strip()) > 0]
                     num_nodes = int(line_parts[2])
                     num_edges = int(line_parts[3])
                     graph_obj = UndirectedGraph(num_nodes, num_edges)
